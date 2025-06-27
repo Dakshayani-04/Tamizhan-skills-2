@@ -1,0 +1,182 @@
+<!DOCTYPE html><html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>AI Resume Builder</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/docx/7.7.0/docx.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/FileSaver.js/2.0.5/FileSaver.min.js"></script>
+  <style>
+    body {
+      background: url('airesume.jpeg') no-repeat center center fixed;
+      background-size: cover;
+    }
+    .input { @apply w-full border border-gray-300 rounded px-3 py-2 my-2; }
+    .btn { @apply px-4 py-2 rounded text-white bg-blue-500; }
+    
+  </style>
+</head>
+<body class="bg-gray-100 bg-opacity-90 min-h-screen">
+  <div class="max-w-6xl mx-auto py-8">
+    <h1 class="text-4xl font-bold text-center text-white drop-shadow mb-6">AI Resume & Cover Letter Builder</h1><!-- Tabs -->
+<div class="flex justify-center space-x-4 mb-6">
+  <button class="tab-btn px-4 py-2 rounded bg-blue-600 text-white" onclick="showTab('resume', event)">Resume Builder</button>
+  <button class="tab-btn px-4 py-2 rounded bg-gray-300 text-black" onclick="showTab('cover', event)">Cover Letter</button>
+  <button class="tab-btn px-4 py-2 rounded bg-gray-300 text-black" onclick="showTab('ai', event)">AI Assistant</button>
+</div>
+
+<!-- Resume Builder -->
+<div id="resume" class="tab">
+  <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+    <div class="bg-white bg-opacity-90 p-6 rounded shadow">
+      <h2 class="text-2xl font-semibold mb-4">Enter Your Resume Info</h2>
+      <input type="text" id="r_name" class="input" placeholder="Full Name">
+      <input type="text" id="r_email" class="input" placeholder="Email">
+      <input type="text" id="r_phone" class="input" placeholder="Phone">
+      <input type="text" id="r_linkedin" class="input" placeholder="LinkedIn URL">
+      <textarea id="r_summary" class="input" placeholder="Summary"></textarea>
+      <textarea id="r_experience" class="input" placeholder="Work Experience"></textarea>
+      <textarea id="r_education" class="input" placeholder="Education"></textarea>
+      <textarea id="r_skills" class="input" placeholder="Skills (comma separated)"></textarea>
+      <textarea id="r_projects" class="input" placeholder="Projects"></textarea>
+      <input type="file" id="import_txt" class="block mt-2">
+      <div class="flex space-x-4 mt-4">
+        <button onclick="importResume()" class="btn">Import</button>
+        <button onclick="exportResume()" class="btn bg-green-600">Export .docx</button>
+      </div>
+    </div>
+    <div class="bg-white bg-opacity-90 p-6 rounded shadow">
+      <h2 class="text-xl font-semibold mb-2">Live Preview</h2>
+      <pre id="resumePreview" class="whitespace-pre-wrap"></pre>
+    </div>
+  </div>
+</div>
+
+<!-- Cover Letter -->
+<div id="cover" class="tab hidden">
+  <div class="bg-white bg-opacity-90 p-6 rounded shadow max-w-3xl mx-auto">
+    <h2 class="text-2xl font-semibold mb-4">Cover Letter Builder</h2>
+    <input type="text" id="c_to" class="input" placeholder="Recipient (e.g., Hiring Manager)">
+    <input type="text" id="c_position" class="input" placeholder="Position">
+    <textarea id="c_body" class="input" placeholder="Body"></textarea>
+    <input type="text" id="c_closing" class="input" placeholder="Closing (e.g., Regards, Jane)">
+    <div class="flex space-x-4 mt-4">
+      <button onclick="generateCoverLetter()" class="btn">Preview</button>
+      <button onclick="exportCoverLetter()" class="btn bg-green-600">Export .docx</button>
+    </div>
+    <pre id="coverPreview" class="mt-4 whitespace-pre-wrap"></pre>
+  </div>
+</div>
+
+<!-- AI Assistant -->
+<div id="ai" class="tab hidden">
+  <div class="bg-white bg-opacity-90 p-6 rounded shadow max-w-3xl mx-auto">
+    <h2 class="text-2xl font-semibold mb-4">AI Job Description Analyzer</h2>
+    <textarea id="job_desc" class="input" placeholder="Paste Job Description..."></textarea>
+    <button onclick="analyzeJD()" class="btn mt-2">Analyze & Suggest Keywords</button>
+    <div id="keywords" class="mt-4 text-blue-700 font-semibold"></div>
+    <button onclick="insertKeywords()" class="btn mt-2 bg-purple-600">Insert Keywords into Resume</button>
+  </div>
+</div>
+
+  </div>
+  <!-- Footer -->
+<footer class="bg-gray-900 text-white text-center py-6 mt-10">
+  <div class="flex justify-center space-x-6 text-xl mb-3">
+    <a href="#" class="hover:text-blue-400"><i class="fab fa-linkedin"></i></a>
+    <a href="#" class="hover:text-blue-400"><i class="fab fa-github"></i></a>
+    <a href="#" class="hover:text-blue-400"><i class="fab fa-twitter"></i></a>
+    <a href="#" class="hover:text-blue-400"><i class="fab fa-instagram"></i></a>
+  </div>
+  <p class="text-sm">&copy; 2025 AI Resume Builder. All rights reserved.</p>
+</footer>
+
+<!-- Font Awesome -->
+<script src="https://kit.fontawesome.com/a076d05399.js" crossorigin="anonymous"></script> 
+   <script>
+    function showTab(tabId, event) {
+      document.querySelectorAll('.tab').forEach(el => el.classList.add('hidden'));
+      document.getElementById(tabId).classList.remove('hidden');
+      document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('bg-blue-600', 'text-white'));
+      event.target.classList.add('bg-blue-600', 'text-white');
+    }
+
+    function importResume() {
+      const file = document.getElementById('import_txt').files[0];
+      if (!file) return;
+      const reader = new FileReader();
+      reader.onload = e => {
+        const lines = e.target.result.split('\n');
+        lines.forEach(line => {
+          if (line.includes('Name')) document.getElementById('r_name').value = line.split(':')[1]?.trim();
+          if (line.includes('Email')) document.getElementById('r_email').value = line.split(':')[1]?.trim();
+        });
+      };
+      reader.readAsText(file);
+    }
+
+    function exportResume() {
+    const doc = new docx.Document();
+    const sections = [
+        `Name: ${document.getElementById('r_name').value}`,
+        `Email: ${document.getElementById('r_email').value}, Phone: ${document.getElementById('r_phone').value}`,
+        `LinkedIn: ${document.getElementById('r_linkedin').value}`,
+        `Summary:\n${document.getElementById('r_summary').value}`,
+        `Experience:\n${document.getElementById('r_experience').value}`,
+        `Education:\n${document.getElementById('r_education').value}`,
+        `Skills:\n${document.getElementById('r_skills').value}`,
+        `Projects:\n${document.getElementById('r_projects').value}`
+    ];
+    
+    const children = sections.map(text => new docx.Paragraph({
+        children: [new docx.TextRun(text)]
+    }));
+
+    doc.addSection({ children });
+
+    docx.Packer.toBlob(doc).then(blob => {
+        saveAs(blob, "resume.docx"); // Ensure FileSaver.js is imported
+    });
+}
+
+   function generateCoverLetter() {
+    const to = document.getElementById('c_to').value;
+    const position = document.getElementById('c_position').value;
+    const body = document.getElementById('c_body').value;
+    const closing = document.getElementById('c_closing').value;
+
+    // Using proper template literals (`) for multi-line string
+    document.getElementById('coverPreview').innerText = 
+        `Dear ${to},\n\nI am applying for the ${position} position.\n\n${body}\n\n${closing}`;
+}
+
+
+    function exportCoverLetter() {
+      const doc = new docx.Document();
+      const content = document.getElementById('coverPreview').innerText.split('\n').map(line => new docx.Paragraph(line));
+      doc.addSection({ children: content });
+      docx.Packer.toBlob(doc).then(blob => saveAs(blob, "cover_letter.docx"));
+    }
+
+    function analyzeJD() {
+      const jd = document.getElementById('job_desc').value.toLowerCase();
+      const keywords = ['teamwork', 'leadership', 'javascript', 'python', 'agile', 'react', 'problem-solving'].filter(kw => jd.includes(kw));
+      document.getElementById('keywords').innerText = 'Suggested Keywords: ' + keywords.join(', ');
+    }
+
+    function insertKeywords() {
+      const words = document.getElementById('keywords').innerText.replace('Suggested Keywords: ', '').split(', ');
+      document.getElementById('r_summary').value += '\nKeywords: ' + words.join(', ');
+      document.getElementById('r_skills').value += ', ' + words.join(', ');
+    }
+    module.exports = {
+  content: ["./src/**/*.{html,js}"],
+  theme: {
+    extend: {},
+  },
+  plugins: [],
+};
+
+  </script></body>
+</html>
