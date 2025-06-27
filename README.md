@@ -23,3 +23,10 @@ Export both your resume and cover letter in .docx format using docx.js and FileS
 
 🌐 Responsive & Styled
 Built with Tailwind CSS for a clean and responsive design.
+## 🛠 Technologies Used
+
+- *HTML5*
+- *CSS3*
+- *JavaScript (Vanilla)*
+- *Font Awesome* (for social icons)
+- *Responsive Design* with media queries
